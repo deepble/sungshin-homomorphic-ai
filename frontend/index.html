@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>AI 면접 시뮬레이터</title>
+  <script src="recorder.js" defer></script>
+  <style>
+    input[type="range"] { width: 200px; }
+  </style>
+</head>
+<body>
+  <h2 id="question-title">면접 질문을 불러오는 중...</h2>
+  <form id="form">
+    <label>🧑 텍스트 입력:</label><br>
+    <textarea name="text" rows="4" cols="60"></textarea><br><br>
+
+    <label>🎤 마이크 입력:</label><br>
+    <p id="timer-display">⏱ 남은 시간: 30초</p>
+    <button type="button" id="record">🎙️ 녹음 시작</button><br><br>
+    <button type="button" id="stop-recording" disabled>🛑 녹음 중단</button><br><br>
+
+    <h3>⚙️ 평가 항목 선택 및 가중치 조정</h3>
+    <div class="slider-group">
+      <label><input type="checkbox" name="features[]" value="length" checked> 단어 수</label>
+      <input type="range" name="weights[]" min="0" max="5" step="0.1" value="0.5">
+    </div>
+    <div class="slider-group">
+      <label><input type="checkbox" name="features[]" value="positive" checked> 긍정 표현</label>
+      <input type="range" name="weights[]" min="0" max="5" step="0.1" value="2.0">
+    </div>
+    <div class="slider-group">
+      <label><input type="checkbox" name="features[]" value="keywords" checked> 직무 키워드</label>
+      <input type="range" name="weights[]" min="0" max="5" step="0.1" value="3.0">
+    </div>
+    <div class="slider-group">
+      <label><input type="checkbox" name="features[]" value="hesitation" checked> 말더듬음</label>
+      <input type="range" name="weights[]" min="-5" max="0" step="0.1" value="-1.5">
+    </div>
+    <div class="slider-group">
+      <label><input type="checkbox" name="features[]" value="selflead" checked> 자기주도 키워드</label>
+      <input type="range" name="weights[]" min="0" max="5" step="0.1" value="1.5">
+    </div>
+    <div class="slider-group">
+      <label><input type="checkbox" name="features[]" value="teamwork" checked> 팀워크 키워드</label>
+      <input type="range" name="weights[]" min="0" max="5" step="0.1" value="2.5">
+    </div>
+
+    <button type="submit">분석 요청</button>
+  </form>
+
+  <h3>📊 결과</h3>
+  <p><strong>인식된 텍스트:</strong> <span id="transcript"></span></p>
+  <p><strong>점수:</strong> <span id="score"></span></p>
+  <p><strong>등급:</strong> <span id="grade"></span></p>
+  <p><strong>AI 피드백:</strong></p>
+  <pre id="feedback"></pre>
+  <h4>📊 항목별 기여도</h4>
+  <table border="1">
+    <thead><tr><th>항목</th><th>값</th><th>가중치</th><th>기여 점수</th></tr></thead>
+    <tbody id="breakdown"></tbody>
+  </table>
+
+  <!-- 질문을 백엔드에서 받아오는 스크립트임 -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      fetch("http://localhost:5000/question")
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("question-title").textContent = "면접 질문: " + data.question;
+          document.getElementById("question-input").value = data.question; // ✅ 서버 전송용 저장
+        })
+        .catch(error => {
+          document.getElementById("question-title").textContent = "면접 질문을 불러오지 못했습니다.";
+          console.error("질문 불러오기 오류:", error);
+        });
+    }); 
+  </script>
+  <input type="hidden" name="question" id="question-input">
+
+
+</body>
+</html>
