@@ -1,83 +1,170 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <link rel="stylesheet" href="style.css">
-  <meta charset="UTF-8">
-  <title>AI 면접 시뮬레이터</title>
-  <script src="recorder.js" defer></script>
-  <style>
-    input[type="range"] { width: 200px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 면접 시뮬레이터</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="recorder.js" defer></script>
+    <style>
+        textarea[name="text"] {
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+    </style>
 </head>
 <body>
-  <h2 id="question-title">면접 질문을 불러오는 중...</h2>
-  <form id="form">
-    <label>🧑 텍스트 입력:</label><br>
-    <textarea name="text" rows="4" cols="60"></textarea><br><br>
+    <h2 id="question-title">면접 질문을 불러오는 중...</h2>
+    <form id="form">
+        <label>🧑 텍스트 입력:</label><br>
+        <textarea name="text" rows="4" cols="60"></textarea><br><br>
 
-    <label>🎤 마이크 입력:</label><br>
-    <p id="timer-display">⏱ 남은 시간: 30초</p>
-    <button type="button" id="record">🎙️ 녹음 시작</button><br><br>
-    <button type="button" id="stop-recording" disabled>🛑 녹음 중단</button><br><br>
+        <label>🎤 마이크 입력:</label><br>
+        <div id="record-controls">
+            <div id="circular-timer-container">
+                <svg class="circular-chart" viewBox="0 0 44 44">
+                    <circle class="circle-bg" cx="22" cy="22" r="20"></circle>
+                    <circle class="circle" cx="22" cy="22" r="20"></circle>
+                </svg>
+                <div id="timer-text-overlay">
+                    <span class="timer-label">⏱ 남은 시간</span>
+                    <span id="timer-seconds" class="timer-value">30</span>
+                </div>
+            </div>
 
-    <h3>⚙️ 평가 항목 선택 및 가중치 조정</h3>
-    <div class="slider-group">
-      <label><input type="checkbox" name="features[]" value="length" checked> 단어 수</label>
-      <input type="range" name="weights[]" min="0" max="5" step="0.1" value="0.5">
-    </div>
-    <div class="slider-group">
-      <label><input type="checkbox" name="features[]" value="positive" checked> 긍정 표현</label>
-      <input type="range" name="weights[]" min="0" max="5" step="0.1" value="2.0">
-    </div>
-    <div class="slider-group">
-      <label><input type="checkbox" name="features[]" value="keywords" checked> 직무 키워드</label>
-      <input type="range" name="weights[]" min="0" max="5" step="0.1" value="3.0">
-    </div>
-    <div class="slider-group">
-      <label><input type="checkbox" name="features[]" value="hesitation" checked> 말더듬음</label>
-      <input type="range" name="weights[]" min="-5" max="0" step="0.1" value="-1.5">
-    </div>
-    <div class="slider-group">
-      <label><input type="checkbox" name="features[]" value="selflead" checked> 자기주도 키워드</label>
-      <input type="range" name="weights[]" min="0" max="5" step="0.1" value="1.5">
-    </div>
-    <div class="slider-group">
-      <label><input type="checkbox" name="features[]" value="teamwork" checked> 팀워크 키워드</label>
-      <input type="range" name="weights[]" min="0" max="5" step="0.1" value="2.5">
+            <div id="record-buttons-group">
+                <button type="button" id="record">🎙️ 녹음 시작</button>
+                <button type="button" id="stop-recording" disabled>🛑 녹음 중단</button>
+            </div>
+        </div>
+
+        <h3>⚙️ 평가 항목 선택 및 가중치 조정</h3>
+        <!-- 평가 항목 슬라이더 그룹들 -->
+        <div class="slider-group">
+            <label class="toggle-label">단어 수
+                <input type="checkbox" name="features[]" value="length" checked class="feature-toggle">
+                <span class="toggle-switch"></span>
+            </label>
+            <div class="slider-wrapper">
+                <input type="range" name="weights[]" min="0" max="5" step="0.1" value="0.5">
+                <span class="slider-value">0.5</span>
+            </div>
+        </div>
+        <div class="slider-group">
+            <label class="toggle-label">긍정 표현
+                <input type="checkbox" name="features[]" value="positive" checked class="feature-toggle">
+                <span class="toggle-switch"></span>
+            </label>
+            <div class="slider-wrapper">
+                <input type="range" name="weights[]" min="0" max="5" step="0.1" value="2.0">
+                <span class="slider-value">2.0</span>
+            </div>
+        </div>
+        <div class="slider-group">
+            <label class="toggle-label">직무 키워드
+                <input type="checkbox" name="features[]" value="keywords" checked class="feature-toggle">
+                <span class="toggle-switch"></span>
+            </label>
+            <div class="slider-wrapper">
+                <input type="range" name="weights[]" min="0" max="5" step="0.1" value="3.0">
+                <span class="slider-value">3.0</span>
+            </div>
+        </div>
+        <div class="slider-group">
+            <label class="toggle-label">말더듬
+                <input type="checkbox" name="features[]" value="hesitation" checked class="feature-toggle">
+                <span class="toggle-switch"></span>
+            </label>
+            <div class="slider-wrapper">
+                <input type="range" name="weights[]" min="-5" max="0" step="0.1" value="-1.5">
+                <span class="slider-value">-1.5</span>
+            </div>
+        </div>
+        <div class="slider-group">
+            <label class="toggle-label">자기 주도 키워드
+                <input type="checkbox" name="features[]" value="selflead" checked class="feature-toggle">
+                <span class="toggle-switch"></span>
+            </label>
+            <div class="slider-wrapper">
+                <input type="range" name="weights[]" min="0" max="5" step="0.1" value="1.5">
+                <span class="slider-value">1.5</span>
+            </div>
+        </div>
+        <div class="slider-group">
+            <label class="toggle-label">팀워크 키워드
+                <input type="checkbox" name="features[]" value="teamwork" checked class="feature-toggle">
+                <span class="toggle-switch"></span>
+            </label>
+            <div class="slider-wrapper">
+                <input type="range" name="weights[]" min="0" max="5" step="0.1" value="2.5">
+                <span class="slider-value">2.5</span>
+            </div>
+        </div>
+
+        <button type="submit">분석 요청</button>
+    </form>
+
+    <h3>📊 결과</h3>
+    <p><strong>인식된 텍스트: <span id="transcript"></span></strong></p>
+
+    <div id="results-display-group">
+        <div id="score-display-container">
+            <svg class="circular-chart" viewBox="0 0 44 44">
+                <circle class="circle-bg" cx="22" cy="22" r="20"></circle>
+                <circle class="circle score-circle" cx="22" cy="22" r="20"></circle>
+            </svg>
+            <div id="score-text-overlay">
+                <span class="score-label">점수</span>
+                <span id="score" class="score-value">0</span>
+            </div>
+        </div>
+
+        <div id="grade-display-container">
+            <svg class="circular-chart" viewBox="0 0 44 44">
+                <circle class="circle-bg" cx="22" cy="22" r="20"></circle>
+                <circle class="circle grade-circle" cx="22" cy="22" r="20"></circle>
+            </svg>
+            <div id="grade-text-overlay">
+                <span class="grade-label">등급</span>
+                <span id="grade" class="grade-value">N/A</span>
+            </div>
+        </div>
     </div>
 
-    <button type="submit">분석 요청</button>
-  </form>
+    <p><strong>AI 피드백:</strong></p>
+    <pre id="feedback"></pre>
 
-  <h3>📊 결과</h3>
-  <p><strong>인식된 텍스트:</strong> <span id="transcript"></span></p>
-  <p><strong>점수:</strong> <span id="score"></span></p>
-  <p><strong>등급:</strong> <span id="grade"></span></p>
-  <p><strong>AI 피드백:</strong></p>
-  <pre id="feedback"></pre>
-  <h4>📊 항목별 기여도</h4>
-  <table border="1">
-    <thead><tr><th>항목</th><th>값</th><th>가중치</th><th>기여 점수</th></tr></thead>
-    <tbody id="breakdown"></tbody>
-  </table>
+    <div id="results-and-breakdown">
+        <div id="radar-chart-container">
+            <canvas id="featureRadarChart"></canvas>
+        </div>
+        <div id="breakdown-table-container">
+            <h4>📊 항목별 기여도</h4>
+            <table border="1">
+                <thead><tr><th>항목</th><th>값</th><th>가중치</th><th>기여 점수</th></tr></thead>
+                <tbody id="breakdown"></tbody>
+            </table>
+        </div>
+    </div>
 
-  <!-- 질문을 백엔드에서 받아오는 스크립트임 -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      fetch("http://localhost:5000/question")
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById("question-title").textContent = "면접 질문: " + data.question;
-          document.getElementById("question-input").value = data.question; // ✅ 서버 전송용 저장
-        })
-        .catch(error => {
-          document.getElementById("question-title").textContent = "면접 질문을 불러오지 못했습니다.";
-          console.error("질문 불러오기 오류:", error);
+    <!-- 질문 로딩 스크립트 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch("http://localhost:5000/question")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("question-title").textContent = "면접 질문: " + data.question;
+                    document.getElementById("question-input").value = data.question;
+                })
+                .catch(error => {
+                    document.getElementById("question-title").textContent = "면접 질문을 불러오지 못했습니다.";
+                    console.error("질문 불러오기 오류:", error);
+                });
         });
-    }); 
-  </script>
-  <input type="hidden" name="question" id="question-input">
-
-
+    </script>
+    <input type="hidden" name="question" id="question-input">
 </body>
 </html>
