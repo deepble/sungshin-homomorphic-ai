@@ -1,11 +1,13 @@
 import openai
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # API 키 설정 필요
 try:
     client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 except AttributeError:
-    openai.api_key = "sk-proj-"
+    openai.api_key = ""
     client = None
 
 def generate_feedback(question, breakdown, score, grade):
@@ -52,3 +54,4 @@ def generate_feedback(question, breakdown, score, grade):
             return res.choices[0].message.content.strip()
     except Exception as e:
         return f"AI 피드백 생성 실패: {str(e)}"
+

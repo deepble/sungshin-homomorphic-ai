@@ -24,3 +24,4 @@ def transcribe_audio_from_bytes(audio_bytes):
         return r.recognize_google(audio, language='ko-KR')
     except:
         return ""
+

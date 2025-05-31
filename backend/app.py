@@ -7,6 +7,8 @@ import io
 import logging
 import random
 import json
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -91,7 +93,7 @@ def analyze():
             return jsonify({"error": "선택된 항목 수와 가중치 수가 일치하지 않습니다."}), 400
 
         weights = [float(w) for w in weight_strings]
-        transcript = request.form["transcript"]
+        # transcript = request.form["transcript"]
         feature_vector = json.loads(request.form["features_vector"])
 
         selected_indices = [ALL_FEATURES.index(f) for f in selected]
@@ -114,7 +116,7 @@ def analyze():
         feedback = generate_feedback(question, breakdown, score, grade)
 
         return jsonify({
-            "transcript": transcript,
+            # "transcript": transcript,
             "score": round(score, 2),
             "grade": grade,
             "breakdown": breakdown,
@@ -132,3 +134,4 @@ def get_question():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
